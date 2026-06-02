@@ -9,6 +9,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.chaquo.python.Python
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,10 +44,11 @@ class MainActivity : AppCompatActivity() {
 
                 //Checking if user typed sth
                 if (name.isNotEmpty() && link.isNotEmpty()) {
-                    Toast.makeText(this, "Dodano: $name", Toast.LENGTH_SHORT).show()
-                    //Logic
+                    val py = Python.getInstance()
+                    val absPath=py.getModule("Recipes.py").callAttr("Recipes")
+                    Toast.makeText(this, "Added: $name", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this, "Pola nie mogą być puste", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Type something ;s", Toast.LENGTH_SHORT).show()
                 }
             }
 

@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    id("com.chaquo.python")
 }
 
 android {
@@ -18,6 +19,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk{
+            abiFilters += listOf("arm64-v8a", "x86_64")
+        }
     }
 
     buildTypes {
@@ -32,6 +37,17 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+chaquopy{
+    defaultConfig {
+        version="3.14"
+        buildPython("C:\\Users\\kamci\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe")
+        pip {
+            install("yt-dlp")
+            install("google-generativeai")
+            install("python-dotenv")
+        }
     }
 }
 
