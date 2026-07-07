@@ -72,20 +72,20 @@ class MainActivity : AppCompatActivity() {
             val dialogLayout = inflater.inflate(R.layout.add_dialog_box, null)
             val etLink = dialogLayout.findViewById<EditText>(R.id.etLink)
 
-            builder.setTitle("Add new recipe!")
+            builder.setTitle("Dodaj nowy przepis!")
             builder.setView(dialogLayout)
 
-            builder.setPositiveButton("OK") { _, _ ->
+            builder.setPositiveButton("Ok") { _, _ ->
                 val link = etLink.text.toString()
 
                 if (link.isNotEmpty()) {
                     processLink(link)
                 } else {
-                    Toast.makeText(this, "Type something ;s", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Wpisz cos ;s", Toast.LENGTH_SHORT).show()
                 }
             }
 
-            builder.setNegativeButton("Cancel") { dialog, _ ->
+            builder.setNegativeButton("Anuluj") { dialog, _ ->
                 dialog.dismiss()
             }
 
@@ -124,11 +124,11 @@ class MainActivity : AppCompatActivity() {
     private fun processLink(link: String) {
         val trimmedLink = link.trim()
         if (!trimmedLink.startsWith("http://") && !trimmedLink.startsWith("https://")) {
-            Toast.makeText(this, "To nie wygląda na poprawny link (musi zaczynać się od http:// lub https://)", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Zły link!", Toast.LENGTH_LONG).show()
             return
         }
         if (!trimmedLink.contains("tiktok.com")) {
-            Toast.makeText(this, "Podaj link do TikToka (tiktok.com)", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Napisz link do tiktoka", Toast.LENGTH_LONG).show()
             return
         }
 
@@ -139,12 +139,12 @@ class MainActivity : AppCompatActivity() {
                 val videoInfo = try {
                     YoutubeDL.getInstance().getInfo(trimmedLink)
                 } catch (e: Exception) {
-                    throw Exception("Nie udało się pobrać danych z tego linku. Sprawdź, czy link jest poprawny i czy film wciąż istnieje.")
+                    throw Exception("Tiktok nie znaleziony!")
                 }
 
                 val description = videoInfo.description?.trim() ?: ""
                 if (description.isEmpty()) {
-                    throw Exception("Ten filmik nie ma opisu, więc AI nie ma z czego wygenerować przepisu.")
+                    throw Exception("Brak opisu!")
                 }
 
                 val prompt = """
