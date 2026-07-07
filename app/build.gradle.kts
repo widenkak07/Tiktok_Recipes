@@ -1,6 +1,5 @@
 plugins {
     alias(libs.plugins.android.application)
-    id("com.chaquo.python")
 }
 
 android {
@@ -8,6 +7,11 @@ android {
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
+        }
+        packaging {
+            jniLibs {
+                useLegacyPackaging = true
+            }
         }
     }
 
@@ -39,17 +43,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 }
-chaquopy{
-    defaultConfig {
-        version="3.14"
-        buildPython("C:\\Users\\kamci\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe")
-        pip {
-            install("yt-dlp")
-            install("google-generativeai")
-            install("python-dotenv")
-        }
-    }
-}
 
 dependencies {
     implementation(libs.androidx.activity.ktx)
@@ -60,4 +53,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+    implementation("io.github.junkfood02.youtubedl-android:library:0.18.1")
+    implementation("io.github.junkfood02.youtubedl-android:ffmpeg:0.18.1")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
