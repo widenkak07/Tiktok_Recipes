@@ -151,9 +151,10 @@ class MainActivity : AppCompatActivity() {
                     Na podstawie poniższego opisu filmiku z TikToka wygeneruj przepis kulinarny.
                     Jeżeli opis NIE zawiera żadnego przepisu kulinarnego (np. to nie jest film o gotowaniu),
                     zwróć dokładnie: {"error": "no_recipe"}
-
+                    Wszystko ma być w języku polskim. tłumacz wszystko na polski jednostek takich jak tbsp czy cup nie ruszaj ALE zamieniaj lb na g zgodnie
+                    z ogólnodostepnym przelicznikiem. Jedyne zczego nie tlumacz to naz wlasnych np. grana padano oraz nazw dań
                     Opis filmiku: "$description"
-
+                    
                     W przeciwnym razie odpowiedz WYŁĄCZNIE w formacie JSON, bez żadnego dodatkowego tekstu:
                     {
                       "name": "nazwa dania",
