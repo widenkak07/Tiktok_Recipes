@@ -8,7 +8,7 @@ import org.json.JSONObject
 
 object GeminiHelper {
 
-    private const val API_KEY = ""
+    private const val API_KEY = "AIzaSyC-ZFwmeYsf0zYh-bsp_wJdleQzOlbCMoo"
     private const val MODEL = "gemini-2.5-flash"
     private const val URL = "https://generativelanguage.googleapis.com/v1beta/models/$MODEL:generateContent?key=$API_KEY"
 

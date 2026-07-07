@@ -28,7 +28,8 @@ object RecipeStorage {
                     id = obj.getLong("id"),
                     name = obj.getString("name"),
                     ingredients = ingredients,
-                    instructions = obj.getString("instructions")
+                    link = obj.optString("link", ""),
+                    note = obj.optString("note", "")
                 )
             )
         }
@@ -42,7 +43,8 @@ object RecipeStorage {
             obj.put("id", recipe.id)
             obj.put("name", recipe.name)
             obj.put("ingredients", JSONArray(recipe.ingredients))
-            obj.put("instructions", recipe.instructions)
+            obj.put("link", recipe.link)
+            obj.put("note", recipe.note)
             jsonArray.put(obj)
         }
         val file = File(context.filesDir, FILE_NAME)
@@ -53,6 +55,15 @@ object RecipeStorage {
         val list = loadRecipes(context)
         list.add(recipe)
         saveRecipes(context, list)
+    }
+
+    fun updateRecipe(context: Context, updated: Recipe) {
+        val list = loadRecipes(context)
+        val idx = list.indexOfFirst { it.id == updated.id }
+        if (idx != -1) {
+            list[idx] = updated
+            saveRecipes(context, list)
+        }
     }
 
     fun deleteRecipe(context: Context, recipeId: Long) {
