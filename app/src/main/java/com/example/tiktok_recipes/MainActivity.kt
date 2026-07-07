@@ -70,18 +70,16 @@ class MainActivity : AppCompatActivity() {
             val builder = AlertDialog.Builder(this)
             val inflater = layoutInflater
             val dialogLayout = inflater.inflate(R.layout.add_dialog_box, null)
-            val etName = dialogLayout.findViewById<EditText>(R.id.etName)
             val etLink = dialogLayout.findViewById<EditText>(R.id.etLink)
 
             builder.setTitle("Add new recipe!")
             builder.setView(dialogLayout)
 
             builder.setPositiveButton("OK") { _, _ ->
-                val name = etName.text.toString()
                 val link = etLink.text.toString()
 
-                if (name.isNotEmpty() && link.isNotEmpty()) {
-                    processLink(name, link)
+                if (link.isNotEmpty()) {
+                    processLink(link)
                 } else {
                     Toast.makeText(this, "Type something ;s", Toast.LENGTH_SHORT).show()
                 }
@@ -123,51 +121,85 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun processLink(userGivenName: String, link: String) {
+    private fun processLink(link: String) {
+        val trimmedLink = link.trim()
+        if (!trimmedLink.startsWith("http://") && !trimmedLink.startsWith("https://")) {
+            Toast.makeText(this, "To nie wygląda na poprawny link (musi zaczynać się od http:// lub https://)", Toast.LENGTH_LONG).show()
+            return
+        }
+        if (!trimmedLink.contains("tiktok.com")) {
+            Toast.makeText(this, "Podaj link do TikToka (tiktok.com)", Toast.LENGTH_LONG).show()
+            return
+        }
+
         runOnUiThread { startFakeProgress() }
 
         Thread {
             try {
-                val videoInfo = YoutubeDL.getInstance().getInfo(link)
-                val description = videoInfo.description ?: ""
+                val videoInfo = try {
+                    YoutubeDL.getInstance().getInfo(trimmedLink)
+                } catch (e: Exception) {
+                    throw Exception("Nie udało się pobrać danych z tego linku. Sprawdź, czy link jest poprawny i czy film wciąż istnieje.")
+                }
 
-                // =========================================================
-                // ============ TU WPISZ / EDYTUJ SWÓJ PROMPT =============
-                // =========================================================
+                val description = videoInfo.description?.trim() ?: ""
+                if (description.isEmpty()) {
+                    throw Exception("Ten filmik nie ma opisu, więc AI nie ma z czego wygenerować przepisu.")
+                }
+
                 val prompt = """
-                    Wypisz mi składniki z tego TikToka na podstawie opisu,wszystko w języku polskim chyba, że chodzi o konkretną nazwe np pecorino romano. 
-                    Jeśli napotkasz problem i nie dasz rady wypisac wszystkich składników napisz: 'PROBLEM 0'
+                    Na podstawie poniższego opisu filmiku z TikToka wygeneruj przepis kulinarny.
+                    Jeżeli opis NIE zawiera żadnego przepisu kulinarnego (np. to nie jest film o gotowaniu),
+                    zwróć dokładnie: {"error": "no_recipe"}
 
                     Opis filmiku: "$description"
 
-                    Odpowiedz WYŁĄCZNIE w formacie JSON, bez żadnego dodatkowego tekstu, dokładnie w takiej strukturze:
+                    W przeciwnym razie odpowiedz WYŁĄCZNIE w formacie JSON, bez żadnego dodatkowego tekstu:
                     {
                       "name": "nazwa dania",
                       "ingredients": ["składnik 1", "składnik 2"]
                     }
                 """.trimIndent()
-                // =========================================================
 
-                val rawResponse = GeminiHelper.askGemini(prompt)
+                val rawResponse = try {
+                    GeminiHelper.askGemini(prompt)
+                } catch (e: Exception) {
+                    throw Exception("Błąd połączenia z AI: ${e.message}")
+                }
 
                 val cleanJson = rawResponse
                     .replace("```json", "")
                     .replace("```", "")
                     .trim()
 
-                val recipeJson = JSONObject(cleanJson)
-                val aiName = recipeJson.optString("name", userGivenName)
-                val ingredientsArray = recipeJson.optJSONArray("ingredients") ?: JSONArray()
+                val recipeJson = try {
+                    JSONObject(cleanJson)
+                } catch (e: Exception) {
+                    throw Exception("AI zwróciło niepoprawną odpowiedź. Spróbuj ponownie.")
+                }
+
+                if (recipeJson.has("error")) {
+                    throw Exception("AI nie wykryło przepisu kulinarnego w tym filmiku.")
+                }
+
+                val aiName = recipeJson.optString("name", "Bez nazwy").trim()
+                val ingredientsArray = recipeJson.optJSONArray("ingredients")
                 val ingredients = mutableListOf<String>()
-                for (i in 0 until ingredientsArray.length()) {
-                    ingredients.add(ingredientsArray.getString(i))
+                if (ingredientsArray != null) {
+                    for (i in 0 until ingredientsArray.length()) {
+                        ingredients.add(ingredientsArray.getString(i))
+                    }
+                }
+
+                if (ingredients.isEmpty()) {
+                    throw Exception("AI nie znalazło żadnych składników w tym filmiku.")
                 }
 
                 val recipe = Recipe(
                     id = nextId++,
-                    name = aiName.ifEmpty { userGivenName },
+                    name = aiName.ifEmpty { "Bez nazwy" },
                     ingredients = ingredients,
-                    link = link,
+                    link = trimmedLink,
                     note = ""
                 )
 
@@ -183,7 +215,7 @@ class MainActivity : AppCompatActivity() {
                 e.printStackTrace()
                 runOnUiThread {
                     finishProgress(success = false)
-                    Toast.makeText(this, "Błąd: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this, e.message ?: "Wystąpił nieznany błąd", Toast.LENGTH_LONG).show()
                 }
             }
         }.start()

@@ -1,8 +1,19 @@
+import java.util.Properties
+import java.io.FileInputStream
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
 plugins {
     alias(libs.plugins.android.application)
 }
 
 android {
+    buildFeatures {
+        buildConfig = true
+    }
     namespace = "com.example.tiktok_recipes"
     compileSdk {
         version = release(36) {
@@ -23,6 +34,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "GEMINI_API_KEY", "\"${localProperties.getProperty("GEMINI_API_KEY", "")}\"")
 
         ndk{
             abiFilters += listOf("arm64-v8a", "x86_64")
